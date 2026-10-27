@@ -11,6 +11,56 @@ from io import BytesIO
 # =====================================================
 
 st.set_page_config(
+    
+# Dark green theme for input boxes and text
+st.markdown("""
+<style>
+/* Main background and text */
+.stApp {
+    background-color: #102820;
+    color: #E8F5E9;
+}
+
+/* Text inside input boxes */
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input,
+.stSelectbox div[data-baseweb="select"],
+.stMultiSelect div[data-baseweb="select"] {
+    background-color: #1B4332 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #40916C !important;
+}
+
+/* Date picker and calendar input */
+[data-baseweb="datepicker"] input {
+    background-color: #1B4332 !important;
+    color: #FFFFFF !important;
+}
+
+/* File uploader */
+[data-testid="stFileUploader"] {
+    background-color: #1B4332 !important;
+    border: 1px solid #40916C !important;
+    border-radius: 10px;
+    padding: 12px;
+    color: #FFFFFF !important;
+}
+
+/* General labels and text */
+.stApp label,
+.stApp p,
+.stApp span {
+    color: #E8F5E9;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #163A2D;
+}
+</style>
+""", unsafe_allow_html=True)
+
     page_title="SalesVision | Smart Analytics",
     page_icon="📊",
     layout="wide",

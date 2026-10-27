@@ -1,27 +1,65 @@
 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import numpy as np
+import plotly.express as px
 from pathlib import Path
 from io import BytesIO
 
-# =====================================================
-# SALESVISION | UNIVERSAL DATA ANALYTICS DASHBOARD
-# =====================================================
-
+# --------------------------------------------------
+# PAGE CONFIGURATION
+# --------------------------------------------------
 st.set_page_config(
-    
-# Dark green theme for input boxes and text
+    page_title="SalesVision | Smart Data Analytics",
+    page_icon="🌿",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+BASE_DIR = Path(__file__).resolve().parent
+DEFAULT_FILE = BASE_DIR / "salesvision_cleaned.csv"
+
+# --------------------------------------------------
+# DARK GREEN THEME
+# --------------------------------------------------
 st.markdown("""
 <style>
-/* Main background and text */
 .stApp {
     background-color: #102820;
     color: #E8F5E9;
 }
 
-/* Text inside input boxes */
+[data-testid="stHeader"] {
+    background-color: #102820;
+}
+
+[data-testid="stSidebar"] {
+    background-color: #163A2D;
+}
+
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 {
+    color: #B7E4C7 !important;
+}
+
+.stApp p, .stApp label, .stApp small {
+    color: #E8F5E9;
+}
+
+[data-testid="stMetric"] {
+    background-color: #1B4332;
+    border: 1px solid #40916C;
+    padding: 18px;
+    border-radius: 12px;
+}
+
+[data-testid="stMetricLabel"] {
+    color: #B7E4C7 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color: #FFFFFF !important;
+}
+
 .stTextInput input,
 .stNumberInput input,
 .stDateInput input,
@@ -29,189 +67,150 @@ st.markdown("""
 .stMultiSelect div[data-baseweb="select"] {
     background-color: #1B4332 !important;
     color: #FFFFFF !important;
-    border: 1px solid #40916C !important;
+    border-color: #40916C !important;
 }
 
-/* Date picker and calendar input */
-[data-baseweb="datepicker"] input {
-    background-color: #1B4332 !important;
-    color: #FFFFFF !important;
-}
-
-/* File uploader */
 [data-testid="stFileUploader"] {
-    background-color: #1B4332 !important;
-    border: 1px solid #40916C !important;
-    border-radius: 10px;
-    padding: 12px;
+    background-color: #1B4332;
+    border: 1px solid #40916C;
+    border-radius: 12px;
+    padding: 14px;
+}
+
+[data-testid="stFileUploader"] *,
+[data-testid="stFileUploaderDropzone"] * {
     color: #FFFFFF !important;
 }
 
-/* General labels and text */
-.stApp label,
-.stApp p,
-.stApp span {
-    color: #E8F5E9;
+[data-testid="stDateInput"] input {
+    background-color: #1B4332 !important;
+    color: #FFFFFF !important;
+    border: 1px solid #40916C !important;
 }
 
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #163A2D;
-}
-</style>
-""", unsafe_allow_html=True)
-
-    page_title="SalesVision | Smart Analytics",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-BASE_DIR = Path(__file__).parent
-DEFAULT_FILE = BASE_DIR / "salesvision_cleaned.csv"
-
-# -------------------- THEME --------------------
-
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-html, body, [class*="css"] {
-    font-family: 'Poppins', sans-serif;
-}
-
-.stApp {
-    background-color: #f4f7f0;
-}
-
-[data-testid="stSidebar"] {
-    background-color: #173d30;
-}
-
-[data-testid="stSidebar"] * {
-    color: white;
-}
-
-.main-title {
-    color: #173d30;
-    font-size: 32px;
-    font-weight: 700;
-}
-
-.subtitle {
-    color: #64766a;
-    margin-bottom: 20px;
-}
-
-.kpi-card {
-    background: white;
-    border-left: 5px solid #38765b;
-    border-radius: 12px;
-    padding: 17px;
-    margin-bottom: 10px;
-    min-height: 108px;
-    box-shadow: 0 3px 12px rgba(30,70,50,0.08);
-}
-
-.kpi-label {
-    color: #64766a;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.kpi-value {
-    color: #173d30;
-    font-size: 23px;
-    font-weight: 700;
-    margin-top: 8px;
-    overflow-wrap: anywhere;
-}
-
-.section-title {
-    color: #173d30;
-    font-size: 21px;
-    font-weight: 600;
-    margin-top: 18px;
-    margin-bottom: 8px;
-}
-
-.insight-card {
-    background: #e6efe5;
-    border-radius: 10px;
-    padding: 15px;
-    color: #173d30;
-    margin-bottom: 8px;
-}
-
-div[data-testid="stPlotlyChart"] {
-    background: white;
-    border-radius: 12px;
-    padding: 8px;
-}
-
+.stButton button,
 .stDownloadButton button {
-    background: #245640;
-    color: white;
+    background-color: #2D6A4F;
+    color: #FFFFFF;
+    border: 1px solid #52B788;
     border-radius: 8px;
 }
+
+.stButton button:hover,
+.stDownloadButton button:hover {
+    background-color: #40916C;
+    color: #FFFFFF;
+    border-color: #B7E4C7;
+}
+
+[data-testid="stDataFrame"],
+[data-testid="stTable"] {
+    border: 1px solid #40916C;
+    border-radius: 8px;
+}
+
+hr {
+    border-color: #40916C;
+}
+
+div[data-testid="stAlert"] {
+    background-color: #1B4332;
+    color: #FFFFFF;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
 
-# -------------------- HELPER FUNCTIONS --------------------
+# --------------------------------------------------
+# HELPER FUNCTIONS
+# --------------------------------------------------
+def find_column(columns, keywords):
+    """Find a column by checking common names."""
+    normalized = {
+        str(col).strip().lower().replace("_", " ").replace("-", " "): col
+        for col in columns
+    }
 
-def clean_column_names(data):
-    data = data.copy()
-    data.columns = [
-        str(c).strip() if str(c).strip() else f"Column_{i+1}"
-        for i, c in enumerate(data.columns)
-    ]
-    return data
+    for keyword in keywords:
+        key = keyword.lower().replace("_", " ").replace("-", " ")
+        if key in normalized:
+            return normalized[key]
 
-
-def find_column(data, possible_names):
-    """Find a column using common name variations."""
-    lookup = {str(c).strip().lower(): c for c in data.columns}
-
-    for name in possible_names:
-        if name.lower() in lookup:
-            return lookup[name.lower()]
-
-    # Try matching names that contain the requested term.
-    for name in possible_names:
-        for column in data.columns:
-            if name.lower() in str(column).lower():
-                return column
+    for col in columns:
+        col_name = str(col).lower().replace("_", " ").replace("-", " ")
+        for keyword in keywords:
+            key = keyword.lower().replace("_", " ").replace("-", " ")
+            if key in col_name:
+                return col
 
     return None
 
 
-def detect_dates(data):
-    """Identify date columns by name or successfully parsed values."""
-    detected = []
+def detect_date_columns(df):
+    """Detect actual date columns while avoiding numeric columns."""
+    date_cols = []
 
     date_words = [
-        "date", "time", "timestamp", "ordered", "created",
-        "birth", "month", "year"
+        "date", "day", "timestamp", "datetime",
+        "joined", "joining", "order date", "birth date"
     ]
 
-    for col in data.columns:
-        name = str(col).lower()
+    for col in df.columns:
+        series = df[col]
 
-        if pd.api.types.is_datetime64_any_dtype(data[col]):
-            detected.append(col)
+        # Never treat numeric data as dates
+        if pd.api.types.is_numeric_dtype(series):
             continue
 
-        if not any(word in name for word in date_words):
+        name = str(col).lower().replace("_", " ").replace("-", " ")
+        has_date_name = any(word in name for word in date_words)
+
+        if not (
+            pd.api.types.is_datetime64_any_dtype(series)
+            or has_date_name
+        ):
             continue
 
-        parsed = pd.to_datetime(data[col], errors="coerce")
+        parsed = pd.to_datetime(series, errors="coerce")
+        non_empty = series.notna().sum()
 
-        if parsed.notna().mean() >= 0.70:
-            data[col] = parsed
-            detected.append(col)
+        if non_empty == 0:
+            continue
 
-    return detected
+        success_ratio = parsed.notna().sum() / non_empty
+
+        if success_ratio >= 0.60:
+            df[col] = parsed
+            date_cols.append(col)
+
+    return date_cols
+
+
+def detect_numeric_columns(df, date_cols):
+    numeric_cols = []
+
+    for col in df.columns:
+        if col in date_cols:
+            continue
+
+        if pd.api.types.is_numeric_dtype(df[col]):
+            numeric_cols.append(col)
+
+    return numeric_cols
+
+
+def detect_category_columns(df, numeric_cols, date_cols):
+    category_cols = []
+
+    for col in df.columns:
+        if col in numeric_cols or col in date_cols:
+            continue
+
+        if df[col].nunique(dropna=True) <= 100:
+            category_cols.append(col)
+
+    return category_cols
 
 
 def format_number(value):
@@ -220,211 +219,135 @@ def format_number(value):
 
     value = float(value)
 
+    if abs(value) >= 1_000_000_000:
+        return f"{value / 1_000_000_000:.2f}B"
     if abs(value) >= 1_000_000:
-        return f"{value / 1_000_000:,.2f}M"
-
-    if abs(value) >= 10_000:
-        return f"{value:,.0f}"
+        return f"{value / 1_000_000:.2f}M"
+    if abs(value) >= 1_000:
+        return f"{value / 1_000:.2f}K"
 
     return f"{value:,.2f}"
 
 
-def make_chart(fig):
+def style_chart(fig):
     fig.update_layout(
-        template="plotly_white",
-        font=dict(color="#173d30"),
-        margin=dict(l=25, r=25, t=60, b=25),
-        title_font_size=17,
-        legend_title_text=""
+        paper_bgcolor="#163A2D",
+        plot_bgcolor="#163A2D",
+        font=dict(color="#E8F5E9"),
+        title_font=dict(color="#B7E4C7"),
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(color="#E8F5E9")
+        ),
+        margin=dict(l=20, r=20, t=60, b=30)
+    )
+    fig.update_xaxes(
+        gridcolor="#315B48",
+        zerolinecolor="#40916C"
+    )
+    fig.update_yaxes(
+        gridcolor="#315B48",
+        zerolinecolor="#40916C"
     )
     return fig
 
 
-# -------------------- HEADER --------------------
-
-st.markdown(
-    '<div class="main-title">📊 SalesVision Analytics</div>',
-    unsafe_allow_html=True
+# --------------------------------------------------
+# HEADER
+# --------------------------------------------------
+st.title("🌿 SalesVision")
+st.subheader("Smart Data Analytics")
+st.caption(
+    "Upload a CSV dataset to automatically explore data, "
+    "visualizations and insights."
 )
 
-st.markdown(
-    '<div class="subtitle">'
-    'Upload a dataset and automatically explore your data, '
-    'visualizations and insights.'
-    '</div>',
-    unsafe_allow_html=True
-)
-
-
-# -------------------- SIDEBAR / UPLOAD --------------------
-
-st.sidebar.markdown("# 🌿 SalesVision")
-st.sidebar.markdown("### Smart Data Analytics")
-st.sidebar.markdown("---")
-
+# --------------------------------------------------
+# SIDEBAR: UPLOAD
+# --------------------------------------------------
+st.sidebar.title("📂 Dataset")
 uploaded_file = st.sidebar.file_uploader(
-    "📂 Upload a CSV dataset",
+    "Upload a CSV dataset",
     type=["csv"],
-    help="Upload sales, student, finance, survey or other tabular data."
+    help="Upload a CSV file up to the file size limit shown here."
 )
 
-st.sidebar.caption(
-    "No new file uploaded? The default dataset will be used."
-)
-
-# -------------------- LOAD DATA --------------------
-
+# --------------------------------------------------
+# LOAD DATA
+# --------------------------------------------------
 try:
     if uploaded_file is not None:
-        try:
-            raw_df = pd.read_csv(
-                BytesIO(uploaded_file.getvalue()),
-                encoding="utf-8-sig"
-            )
-        except UnicodeDecodeError:
-            raw_df = pd.read_csv(
-                BytesIO(uploaded_file.getvalue()),
-                encoding="latin1"
-            )
-
+        df = pd.read_csv(uploaded_file)
         dataset_name = uploaded_file.name
-
     elif DEFAULT_FILE.exists():
-        try:
-            raw_df = pd.read_csv(DEFAULT_FILE, encoding="utf-8-sig")
-        except UnicodeDecodeError:
-            raw_df = pd.read_csv(DEFAULT_FILE, encoding="latin1")
-
+        df = pd.read_csv(DEFAULT_FILE)
         dataset_name = DEFAULT_FILE.name
-
     else:
         st.warning(
-            "No dataset found. Upload a CSV file using the sidebar."
+            "No default dataset was found. Please upload a CSV file."
         )
         st.stop()
 
 except Exception as error:
-    st.error(f"Could not read this CSV file: {error}")
-    st.stop()
-
-
-if raw_df.empty:
-    st.error("The uploaded dataset has no rows.")
-    st.stop()
-
-raw_df = clean_column_names(raw_df)
-
-# Convert blank strings to missing values.
-raw_df = raw_df.replace(r"^\s*$", np.nan, regex=True)
-
-# Convert numeric-looking text columns when most values are numeric.
-for col in raw_df.columns:
-    if raw_df[col].dtype == "object":
-        cleaned = (
-            raw_df[col]
-            .astype("string")
-            .str.replace(",", "", regex=False)
-            .str.replace("$", "", regex=False)
-            .str.replace("£", "", regex=False)
-            .str.replace("€", "", regex=False)
-            .str.replace("%", "", regex=False)
-            .str.strip()
-        )
-
-        converted = pd.to_numeric(cleaned, errors="coerce")
-
-        if raw_df[col].notna().sum() > 0:
-            numeric_ratio = (
-                converted.notna().sum() / raw_df[col].notna().sum()
-            )
-
-            if numeric_ratio >= 0.85:
-                raw_df[col] = converted
-
-# Identify possible date columns.
-date_columns = detect_dates(raw_df)
-
-if raw_df.empty:
-    st.error("No usable records were found.")
-    st.stop()
-
-
-# -------------------- DATASET SUMMARY --------------------
-
-st.caption(f"📁 Active dataset: **{dataset_name}**")
-
-rows_before = len(raw_df)
-duplicate_count = int(raw_df.duplicated().sum())
-missing_count = int(raw_df.isna().sum().sum())
-
-with st.expander("🔍 Dataset information", expanded=False):
-    info1, info2, info3 = st.columns(3)
-
-    info1.metric("Rows", f"{len(raw_df):,}")
-    info2.metric("Columns", f"{len(raw_df.columns):,}")
-    info3.metric("Duplicate rows", f"{duplicate_count:,}")
-
-    st.write("**Column types**")
-    type_table = pd.DataFrame({
-        "Column": raw_df.columns,
-        "Data type": [str(raw_df[c].dtype) for c in raw_df.columns],
-        "Missing values": [int(raw_df[c].isna().sum()) for c in raw_df.columns]
-    })
-    st.dataframe(type_table, use_container_width=True, hide_index=True)
-
-# Allow filtering based on the uploaded dataset.
-st.sidebar.markdown("---")
-st.sidebar.markdown("### 🔎 Filters")
-
-filtered = raw_df.copy()
-
-# Categorical filters.
-categorical_columns = [
-    c for c in raw_df.columns
-    if c not in date_columns
-    and (
-        pd.api.types.is_object_dtype(raw_df[c])
-        or isinstance(raw_df[c].dtype, pd.CategoricalDtype)
-        or pd.api.types.is_bool_dtype(raw_df[c])
+    st.error(f"Unable to read this CSV file: {error}")
+    st.info(
+        "Please upload a valid CSV file encoded in UTF-8 if possible."
     )
-    and 1 < raw_df[c].nunique(dropna=True) <= 100
+    st.stop()
+
+if df.empty:
+    st.error("The selected dataset is empty.")
+    st.stop()
+
+# Clean column names and remove completely empty rows/columns
+df.columns = [
+    str(col).strip() if str(col).strip() else f"Column_{i + 1}"
+    for i, col in enumerate(df.columns)
 ]
+df = df.dropna(how="all").dropna(axis=1, how="all")
 
-if categorical_columns:
-    filter_columns = st.sidebar.multiselect(
-        "Choose categorical filters",
-        options=categorical_columns,
-        default=[
-            c for c in categorical_columns
-            if any(word in c.lower() for word in
-                   ["region", "category", "segment", "department"])
-        ][:3]
-    )
+if df.empty or len(df.columns) == 0:
+    st.error("No usable data was found in this CSV file.")
+    st.stop()
 
-    for col in filter_columns:
-        values = sorted(
-            raw_df[col].dropna().unique().tolist(),
-            key=lambda x: str(x)
-        )
+# --------------------------------------------------
+# DETECT DATA TYPES
+# --------------------------------------------------
+date_cols = detect_date_columns(df)
+numeric_cols = detect_numeric_columns(df, date_cols)
+category_cols = detect_category_columns(df, numeric_cols, date_cols)
 
-        selected = st.sidebar.multiselect(
-            f"Filter: {col}",
-            options=values,
-            default=values,
-            key=f"filter_{col}"
-        )
-
-        filtered = filtered[filtered[col].isin(selected)]
-
-# Date filter.
-date_col = st.sidebar.selectbox(
-    "Date column",
-    options=["None"] + date_columns,
-    index=1 if date_columns else 0
+sales_col = find_column(
+    numeric_cols,
+    ["Sales", "Revenue", "Amount", "Total Sales", "Income", "Salary"]
 )
 
-if date_col != "None":
-    valid_dates = filtered[date_col].dropna()
+profit_col = find_column(
+    numeric_cols,
+    ["Profit", "Net Profit", "Earnings", "Net Income"]
+)
+
+quantity_col = find_column(
+    numeric_cols,
+    ["Quantity", "Qty", "Units", "Count"]
+)
+
+# --------------------------------------------------
+# SIDEBAR: FILTERS
+# --------------------------------------------------
+st.sidebar.divider()
+st.sidebar.header("🔎 Filters")
+
+filtered_df = df.copy()
+
+# Date filter
+if date_cols:
+    selected_date_col = st.sidebar.selectbox(
+        "Date column",
+        options=date_cols
+    )
+
+    valid_dates = filtered_df[selected_date_col].dropna()
 
     if not valid_dates.empty:
         min_date = valid_dates.min().date()
@@ -441,418 +364,426 @@ if date_col != "None":
         if isinstance(date_range, (tuple, list)) and len(date_range) == 2:
             start_date, end_date = date_range
 
-            filtered = filtered[
-                filtered[date_col].notna()
-                & (filtered[date_col].dt.date >= start_date)
-                & (filtered[date_col].dt.date <= end_date)
+            filtered_df = filtered_df[
+                filtered_df[selected_date_col].notna()
+                & (filtered_df[selected_date_col].dt.date >= start_date)
+                & (filtered_df[selected_date_col].dt.date <= end_date)
             ]
+else:
+    st.sidebar.info("No date column detected in this dataset.")
 
-if filtered.empty:
-    st.warning("No rows match the current filters. Change the filters.")
+# Category filters
+if category_cols:
+    with st.sidebar.expander("Category filters", expanded=False):
+        for col in category_cols:
+            choices = sorted(
+                filtered_df[col].dropna().astype(str).unique().tolist()
+            )
+
+            if 0 < len(choices) <= 50:
+                selected_values = st.multiselect(
+                    f"Filter by {col}",
+                    options=choices,
+                    default=choices,
+                    key=f"filter_{col}"
+                )
+
+                if selected_values:
+                    filtered_df = filtered_df[
+                        filtered_df[col].astype(str).isin(selected_values)
+                    ]
+                else:
+                    filtered_df = filtered_df.iloc[0:0]
+
+# Dataset info
+st.sidebar.divider()
+st.sidebar.caption(f"📁 Active dataset: {dataset_name}")
+st.sidebar.caption(f"Rows: {len(df):,}")
+st.sidebar.caption(f"Columns: {len(df.columns):,}")
+
+# --------------------------------------------------
+# MAIN DATASET INFORMATION
+# --------------------------------------------------
+st.markdown("---")
+st.subheader("🔍 Dataset Information")
+
+info1, info2, info3 = st.columns(3)
+info1.metric("📋 Total Records", f"{len(filtered_df):,}")
+info2.metric("📑 Total Columns", f"{len(filtered_df.columns):,}")
+info3.metric("🔢 Numeric Columns", f"{len(numeric_cols):,}")
+
+if filtered_df.empty:
+    st.warning("No records match the selected filters.")
     st.stop()
 
+with st.expander("View detected column types"):
+    st.write("**Date columns:**", date_cols or "None detected")
+    st.write("**Numeric columns:**", numeric_cols or "None detected")
+    st.write("**Category columns:**", category_cols or "None detected")
 
-# -------------------- DYNAMIC COLUMN DETECTION --------------------
+# --------------------------------------------------
+# KEY PERFORMANCE INDICATORS
+# --------------------------------------------------
+st.markdown("---")
+st.subheader("📌 Key Performance Indicators")
 
-numeric_columns = [
-    c for c in filtered.columns
-    if pd.api.types.is_numeric_dtype(filtered[c])
-    and not pd.api.types.is_bool_dtype(filtered[c])
-]
+kpi_cols = st.columns(5)
 
-text_columns = [
-    c for c in filtered.columns
-    if c not in date_columns
-    and c not in numeric_columns
-    and filtered[c].nunique(dropna=True) > 1
-]
-
-sales_col = find_column(
-    filtered,
-    ["Sales", "Revenue", "Total Sales", "Amount", "Income"]
+kpi_cols[0].metric(
+    "📋 Total Records",
+    f"{len(filtered_df):,}"
 )
 
-profit_col = find_column(
-    filtered,
-    ["Profit", "Net Profit", "Gross Profit", "Earnings"]
-)
+if sales_col and sales_col in filtered_df.columns:
+    kpi_cols[1].metric(
+        f"💰 Total {sales_col}",
+        format_number(filtered_df[sales_col].sum())
+    )
+elif numeric_cols:
+    first_numeric = numeric_cols[0]
+    kpi_cols[1].metric(
+        f"Σ {first_numeric}",
+        format_number(filtered_df[first_numeric].sum())
+    )
+else:
+    kpi_cols[1].metric("💰 Numeric Total", "N/A")
 
-quantity_col = find_column(
-    filtered,
-    ["Quantity", "Qty", "Units Sold", "Units", "Count"]
-)
+if profit_col and profit_col in filtered_df.columns:
+    kpi_cols[2].metric(
+        f"📈 Total {profit_col}",
+        format_number(filtered_df[profit_col].sum())
+    )
+elif len(numeric_cols) > 1:
+    second_numeric = numeric_cols[1]
+    kpi_cols[2].metric(
+        f"📊 Avg. {second_numeric}",
+        format_number(filtered_df[second_numeric].mean())
+    )
+else:
+    kpi_cols[2].metric("📈 Secondary Metric", "N/A")
 
-order_col = find_column(
-    filtered,
-    ["Order ID", "Transaction ID", "Invoice ID", "Order Number"]
-)
-
-category_col = find_column(
-    filtered,
-    ["Category", "Product Category", "Department", "Type"]
-)
-
-region_col = find_column(
-    filtered,
-    ["Region", "Area", "Territory", "Location"]
-)
-
-subcategory_col = find_column(
-    filtered,
-    ["Sub-Category", "Subcategory", "Product", "Product Name", "Item"]
-)
-
-
-# -------------------- DYNAMIC KPI CARDS --------------------
-
-st.markdown(
-    '<div class="section-title">📌 Key Performance Indicators</div>',
-    unsafe_allow_html=True
-)
-
-kpis = [
-    ("📋 Total Records", f"{len(filtered):,}")
-]
-
-if sales_col and sales_col in numeric_columns:
-    kpis.append((
-        "💰 Total " + sales_col,
-        format_number(filtered[sales_col].sum())
-    ))
-
-if profit_col and profit_col in numeric_columns:
-    kpis.append((
-        "📈 Total " + profit_col,
-        format_number(filtered[profit_col].sum())
-    ))
-
-if quantity_col and quantity_col in numeric_columns:
-    kpis.append((
-        "📦 Total " + quantity_col,
-        format_number(filtered[quantity_col].sum())
-    ))
-
-if order_col:
-    kpis.append((
-        "🧾 Unique Orders",
-        f"{filtered[order_col].nunique():,}"
-    ))
+if quantity_col and quantity_col in filtered_df.columns:
+    kpi_cols[3].metric(
+        f"📦 Total {quantity_col}",
+        format_number(filtered_df[quantity_col].sum())
+    )
+elif numeric_cols:
+    first_numeric = numeric_cols[0]
+    kpi_cols[3].metric(
+        f"📊 Avg. {first_numeric}",
+        format_number(filtered_df[first_numeric].mean())
+    )
+else:
+    kpi_cols[3].metric("📊 Average", "N/A")
 
 if (
     sales_col and profit_col
-    and sales_col in numeric_columns
-    and profit_col in numeric_columns
+    and sales_col in filtered_df.columns
+    and profit_col in filtered_df.columns
 ):
-    total_sales = filtered[sales_col].sum()
-    total_profit = filtered[profit_col].sum()
+    total_sales = filtered_df[sales_col].sum()
+    total_profit = filtered_df[profit_col].sum()
 
     margin = (
-        total_profit / total_sales * 100
-        if total_sales != 0 else np.nan
+        (total_profit / total_sales) * 100
+        if total_sales != 0 else 0
     )
-
-    kpis.append((
-        "🎯 Profit Margin",
-        f"{margin:.2f}%" if pd.notna(margin) else "N/A"
-    ))
-
-# Generic numeric summaries if no recognized sales metrics exist.
-if len(kpis) == 1:
-    for col in numeric_columns[:4]:
-        kpis.append((
-            f"∑ {col}",
-            format_number(filtered[col].sum())
-        ))
-
-for start in range(0, len(kpis), 4):
-    group = kpis[start:start + 4]
-    columns = st.columns(4)
-
-    for container, (label, value) in zip(columns, group):
-        with container:
-            st.markdown(
-                f'<div class="kpi-card">'
-                f'<div class="kpi-label">{label}</div>'
-                f'<div class="kpi-value">{value}</div>'
-                f'</div>',
-                unsafe_allow_html=True
-            )
-
-
-# -------------------- AUTOMATIC VISUALIZATIONS --------------------
-
-st.markdown(
-    '<div class="section-title">📊 Data Visualizations</div>',
-    unsafe_allow_html=True
-)
-
-if not numeric_columns:
-    st.info(
-        "No numeric columns were detected. Upload data containing "
-        "numeric values to generate numeric charts."
+    kpi_cols[4].metric("🎯 Profit Margin", f"{margin:.2f}%")
+elif numeric_cols:
+    first_numeric = numeric_cols[0]
+    kpi_cols[4].metric(
+        f"⬆️ Max {first_numeric}",
+        format_number(filtered_df[first_numeric].max())
     )
 else:
-    chart1, chart2 = st.columns(2)
+    kpi_cols[4].metric("🎯 Max Value", "N/A")
 
-    # Numeric distribution.
-    with chart1:
-        selected_numeric = st.selectbox(
-            "Numeric variable distribution",
-            numeric_columns,
-            key="distribution_column"
+# --------------------------------------------------
+# VISUALIZATIONS
+# --------------------------------------------------
+st.markdown("---")
+st.subheader("📊 Data Visualizations")
+
+chart_left, chart_right = st.columns(2)
+
+# Numeric distribution
+with chart_left:
+    st.markdown("#### Numeric variable distribution")
+
+    if numeric_cols:
+        distribution_col = st.selectbox(
+            "Choose numeric variable",
+            numeric_cols,
+            key="distribution_col"
         )
 
-        hist_data = filtered[[selected_numeric]].dropna()
+        values = filtered_df[distribution_col].dropna()
 
-        if not hist_data.empty:
+        if not values.empty:
             fig = px.histogram(
-                hist_data,
-                x=selected_numeric,
+                x=values,
                 nbins=30,
-                title=f"Distribution of {selected_numeric}",
-                color_discrete_sequence=["#38765b"]
+                title=f"Distribution of {distribution_col}",
+                labels={"x": distribution_col, "y": "Frequency"}
             )
-            st.plotly_chart(make_chart(fig), use_container_width=True)
+            st.plotly_chart(style_chart(fig), use_container_width=True)
+        else:
+            st.info("No numeric values are available for this chart.")
+    else:
+        st.info("No numeric columns were detected.")
 
-    # Categorical comparison.
-    with chart2:
-        if text_columns:
-            selected_category = st.selectbox(
-                "Compare by category",
-                text_columns,
-                key="category_column"
-            )
+# Category comparison
+with chart_right:
+    st.markdown("#### Compare by category")
 
-            selected_measure = st.selectbox(
-                "Measure",
-                numeric_columns,
-                key="category_measure"
-            )
+    if category_cols and numeric_cols:
+        comparison_category = st.selectbox(
+            "Category",
+            category_cols,
+            key="comparison_category"
+        )
 
-            grouped = (
-                filtered.groupby(selected_category, dropna=False)[selected_measure]
+        default_measure = (
+            sales_col if sales_col in numeric_cols else numeric_cols[0]
+        )
+
+        comparison_measure = st.selectbox(
+            "Measure",
+            numeric_cols,
+            index=numeric_cols.index(default_measure),
+            key="comparison_measure"
+        )
+
+        comparison_data = filtered_df[
+            [comparison_category, comparison_measure]
+        ].dropna()
+
+        if not comparison_data.empty:
+            comparison_data = (
+                comparison_data
+                .groupby(comparison_category, as_index=False)[comparison_measure]
                 .sum()
-                .reset_index()
-                .sort_values(selected_measure, ascending=False)
-                .head(15)
-            )
-
-            grouped[selected_category] = (
-                grouped[selected_category].astype(str)
+                .sort_values(comparison_measure, ascending=False)
+                .head(20)
             )
 
             fig = px.bar(
-                grouped,
-                x=selected_category,
-                y=selected_measure,
-                title=f"{selected_measure} by {selected_category}",
-                color=selected_measure,
-                color_continuous_scale=["#c9dfca", "#245640"]
+                comparison_data,
+                x=comparison_category,
+                y=comparison_measure,
+                title=f"{comparison_measure} by {comparison_category}",
+                color=comparison_measure
             )
-            fig.update_layout(coloraxis_showscale=False)
-            st.plotly_chart(make_chart(fig), use_container_width=True)
+            st.plotly_chart(style_chart(fig), use_container_width=True)
         else:
-            st.info("No categorical columns are available for comparison.")
+            st.info("No data is available for this comparison.")
+    else:
+        st.info("A category column and a numeric column are needed.")
 
-    # Time trend.
-    if date_columns:
-        trend_col1, trend_col2 = st.columns(2)
+# Date trend
+st.markdown("#### 📅 Trend over time")
 
-        with trend_col1:
-            selected_date = st.selectbox(
-                "Trend date column",
-                date_columns,
-                key="trend_date"
-            )
+if date_cols and numeric_cols:
+    trend_left, trend_right = st.columns(2)
 
-        with trend_col2:
-            trend_measure = st.selectbox(
-                "Trend measure",
-                numeric_columns,
-                key="trend_measure"
-            )
-
-        trend_data = filtered.dropna(
-            subset=[selected_date, trend_measure]
-        ).copy()
-
-        if not trend_data.empty:
-            trend_data["Period"] = (
-                trend_data[selected_date].dt.to_period("M").astype(str)
-            )
-
-            trend = (
-                trend_data.groupby("Period", as_index=False)[trend_measure]
-                .sum()
-                .sort_values("Period")
-            )
-
-            fig = px.line(
-                trend,
-                x="Period",
-                y=trend_measure,
-                markers=True,
-                title=f"{trend_measure} Over Time",
-                color_discrete_sequence=["#38765b"]
-            )
-            st.plotly_chart(make_chart(fig), use_container_width=True)
-
-    # Correlation heatmap.
-    if len(numeric_columns) >= 2:
-        with st.expander("🔗 Numeric Correlation Analysis"):
-            correlation = filtered[numeric_columns].corr()
-
-            fig = px.imshow(
-                correlation,
-                text_auto=".2f",
-                aspect="auto",
-                color_continuous_scale="RdYlGn",
-                zmin=-1,
-                zmax=1,
-                title="Correlation Between Numeric Variables"
-            )
-            st.plotly_chart(make_chart(fig), use_container_width=True)
-
-
-# -------------------- AUTOMATIC INSIGHTS --------------------
-
-st.markdown(
-    '<div class="section-title">💡 Automatic Insights</div>',
-    unsafe_allow_html=True
-)
-
-insights = []
-
-insights.append(
-    f"The filtered dataset contains {len(filtered):,} records "
-    f"and {len(filtered.columns)} columns."
-)
-
-if duplicate_count > 0:
-    insights.append(
-        f"The original dataset contains {duplicate_count:,} duplicate rows. "
-        "Review them before removing any records."
-    )
-
-if missing_count > 0:
-    insights.append(
-        f"The original dataset contains {missing_count:,} missing cell values. "
-        "Check the data-quality section below."
-    )
-else:
-    insights.append("No missing values were found in the original dataset.")
-
-if sales_col and sales_col in numeric_columns:
-    insights.append(
-        f"Total {sales_col.lower()} for the selected data: "
-        f"{format_number(filtered[sales_col].sum())}."
-    )
-
-if profit_col and profit_col in numeric_columns:
-    total_profit = filtered[profit_col].sum()
-
-    if total_profit > 0:
-        insights.append(
-            f"Total {profit_col.lower()} is positive: "
-            f"{format_number(total_profit)}."
+    with trend_left:
+        trend_date_col = st.selectbox(
+            "Trend date column",
+            date_cols,
+            key="trend_date_col"
         )
-    elif total_profit < 0:
-        insights.append(
-            f"Total {profit_col.lower()} is negative: "
-            f"{format_number(total_profit)}. Investigate potential losses."
+
+    with trend_right:
+        trend_measure = st.selectbox(
+            "Trend measure",
+            numeric_cols,
+            key="trend_measure"
+        )
+
+    trend_data = filtered_df[
+        [trend_date_col, trend_measure]
+    ].dropna().copy()
+
+    if not trend_data.empty:
+        trend_data["_period"] = trend_data[trend_date_col].dt.to_period("M").dt.to_timestamp()
+
+        trend_data = (
+            trend_data
+            .groupby("_period", as_index=False)[trend_measure]
+            .sum()
+            .sort_values("_period")
+        )
+
+        fig = px.line(
+            trend_data,
+            x="_period",
+            y=trend_measure,
+            markers=True,
+            title=f"{trend_measure} over time"
+        )
+        fig.update_xaxes(title="Date")
+        fig.update_yaxes(title=trend_measure)
+        st.plotly_chart(style_chart(fig), use_container_width=True)
+    else:
+        st.info("No valid dates or numeric values are available.")
+else:
+    st.info("A date column and a numeric column are needed for trend analysis.")
+
+# Correlation analysis
+st.markdown("---")
+st.subheader("🔗 Numeric Correlation Analysis")
+
+if len(numeric_cols) >= 2:
+    corr_data = filtered_df[numeric_cols].corr(numeric_only=True)
+
+    if not corr_data.empty:
+        fig = px.imshow(
+            corr_data,
+            text_auto=".2f",
+            aspect="auto",
+            color_continuous_scale="RdYlGn",
+            zmin=-1,
+            zmax=1,
+            title="Correlation heatmap"
+        )
+        st.plotly_chart(style_chart(fig), use_container_width=True)
+    else:
+        st.info("Unable to calculate correlations for this data.")
+else:
+    st.info("At least two numeric columns are needed for correlation analysis.")
+
+# --------------------------------------------------
+# AUTOMATIC INSIGHTS
+# --------------------------------------------------
+st.markdown("---")
+st.subheader("💡 Automatic Insights")
+
+st.info(
+    f"The filtered dataset contains {len(filtered_df):,} records "
+    f"and {len(filtered_df.columns):,} columns."
+)
+
+missing_original = int(df.isna().sum().sum())
+missing_filtered = int(filtered_df.isna().sum().sum())
+
+if missing_original == 0:
+    st.success("No missing values were found in the original dataset.")
+else:
+    st.warning(
+        f"The original dataset contains {missing_original:,} missing values."
+    )
+
+if missing_filtered > 0:
+    st.write(
+        f"💡 The filtered data contains {missing_filtered:,} missing cells."
+    )
+
+if sales_col and sales_col in filtered_df.columns:
+    st.write(
+        f"💡 Total {sales_col}: "
+        f"{format_number(filtered_df[sales_col].sum())}."
+    )
+
+if profit_col and profit_col in filtered_df.columns:
+    profit_total = filtered_df[profit_col].sum()
+    if profit_total >= 0:
+        st.write(
+            f"💡 Total {profit_col} is positive: "
+            f"{format_number(profit_total)}."
         )
     else:
-        insights.append(f"Total {profit_col.lower()} is zero.")
+        st.write(
+            f"⚠️ Total {profit_col} is negative: "
+            f"{format_number(profit_total)}."
+        )
 
-if category_col and category_col in filtered.columns:
-    category_measure = (
-        sales_col if sales_col in numeric_columns
-        else numeric_columns[0] if numeric_columns
-        else None
+if category_cols and numeric_cols:
+    insight_category = (
+        find_column(category_cols, ["Category", "Department", "Region", "City"])
+        or category_cols[0]
     )
+    insight_measure = sales_col if sales_col in numeric_cols else numeric_cols[0]
 
-    if category_measure:
-        totals = filtered.groupby(category_col)[category_measure].sum()
+    insight_data = filtered_df[
+        [insight_category, insight_measure]
+    ].dropna()
 
-        if not totals.empty:
-            best = totals.idxmax()
-            worst = totals.idxmin()
+    if not insight_data.empty:
+        grouped = (
+            insight_data
+            .groupby(insight_category)[insight_measure]
+            .sum()
+            .sort_values(ascending=False)
+        )
 
-            insights.append(
-                f"Highest {category_measure} by {category_col}: "
-                f"{best} ({format_number(totals.max())})."
+        if not grouped.empty:
+            st.write(
+                f"💡 Highest {insight_measure} by {insight_category}: "
+                f"{grouped.index[0]} ({format_number(grouped.iloc[0])})."
+            )
+            st.write(
+                f"💡 Lowest {insight_measure} by {insight_category}: "
+                f"{grouped.index[-1]} ({format_number(grouped.iloc[-1])})."
             )
 
-            if best != worst:
-                insights.append(
-                    f"Lowest {category_measure} by {category_col}: "
-                    f"{worst} ({format_number(totals.min())})."
-                )
+for col in numeric_cols[:5]:
+    values = filtered_df[col].dropna()
 
-if numeric_columns:
-    for col in numeric_columns[:3]:
-        values = filtered[col].dropna()
+    if not values.empty:
+        st.write(
+            f"💡 **{col}:** average {format_number(values.mean())}; "
+            f"minimum {format_number(values.min())}; "
+            f"maximum {format_number(values.max())}."
+        )
 
-        if not values.empty:
-            insights.append(
-                f"{col}: average {format_number(values.mean())}; "
-                f"minimum {format_number(values.min())}; "
-                f"maximum {format_number(values.max())}."
-            )
+# --------------------------------------------------
+# DATA QUALITY
+# --------------------------------------------------
+st.markdown("---")
+st.subheader("🧹 Data Quality")
 
-for insight in insights:
-    st.markdown(
-        f'<div class="insight-card">💡 {insight}</div>',
-        unsafe_allow_html=True
-    )
-
-
-# -------------------- DATA QUALITY --------------------
-
-st.markdown(
-    '<div class="section-title">🧹 Data Quality</div>',
-    unsafe_allow_html=True
-)
-
-quality = pd.DataFrame({
-    "Column": raw_df.columns,
-    "Missing Values": [int(raw_df[c].isna().sum()) for c in raw_df.columns],
+quality_data = pd.DataFrame({
+    "Column": df.columns,
+    "Data Type": [str(df[col].dtype) for col in df.columns],
+    "Missing Values": [int(df[col].isna().sum()) for col in df.columns],
     "Missing (%)": [
-        round(raw_df[c].isna().mean() * 100, 2)
-        for c in raw_df.columns
+        round(float(df[col].isna().mean() * 100), 2)
+        for col in df.columns
     ],
-    "Unique Values": [
-        int(raw_df[c].nunique(dropna=True)) for c in raw_df.columns
-    ],
-    "Data Type": [str(raw_df[c].dtype) for c in raw_df.columns]
+    "Unique Values": [int(df[col].nunique(dropna=True)) for col in df.columns]
 })
 
-st.dataframe(quality, use_container_width=True, hide_index=True)
+st.dataframe(quality_data, use_container_width=True, hide_index=True)
 
-# -------------------- DATA TABLE / DOWNLOAD --------------------
+duplicate_count = int(df.duplicated().sum())
+st.write(f"🔁 Duplicate rows: **{duplicate_count:,}**")
 
-st.markdown(
-    '<div class="section-title">📋 Explore Your Data</div>',
-    unsafe_allow_html=True
-)
+# --------------------------------------------------
+# DATA EXPLORER AND DOWNLOAD
+# --------------------------------------------------
+st.markdown("---")
+st.subheader("📋 Explore Your Data")
 
-st.caption(f"Showing {len(filtered):,} filtered records.")
+st.caption(f"Showing {len(filtered_df):,} filtered records.")
 
 st.dataframe(
-    filtered,
+    filtered_df,
     use_container_width=True,
     hide_index=True
 )
 
-csv_data = filtered.to_csv(index=False).encode("utf-8-sig")
+csv_data = filtered_df.to_csv(index=False).encode("utf-8-sig")
 
 st.download_button(
-    "⬇️ Download Filtered Dataset",
+    label="📥 Download filtered data as CSV",
     data=csv_data,
     file_name="salesvision_filtered_data.csv",
     mime="text/csv"
 )
 
+# --------------------------------------------------
+# FOOTER
+# --------------------------------------------------
 st.markdown("---")
 st.caption(
     "SalesVision Analytics | Universal CSV Analytics | "
